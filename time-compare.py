@@ -89,12 +89,12 @@ def main():
 
         # print(f"{item['protocol']}/{item['port']} = {day_percent_diff} ({week_percent_diff})")
         if abs(day_percent_diff) >= 2.0:
-            day_columns.append(f"{item["protocol"]}/{item["port"]}")
+            day_columns.append(f"{item['protocol']}/{item['port']}")
             day_values.append(day_percent_diff)
             # print(f" -  > 2.0, today = {item['count']}, yesterday = {yesterday_count}")
 
         if abs(week_percent_diff) >= 3.0:
-            week_columns.append(f"{item["protocol"]}/{item["port"]}")
+            week_columns.append(f"{item['protocol']}/{item['port']}")
             week_values.append(week_percent_diff)
             # print(f" - {item['protocol']}/{item['port']} >= 3.0, today = {item['percent']}%, last_week = {week_count_percent}%")
 
