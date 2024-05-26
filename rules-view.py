@@ -2,11 +2,14 @@ import re
 import ast
 import os
 import regex
-from datetime import datetime, timedelta
+import sys
+from datetime import datetime, timedelta, date
 
 from suricataparser import parse_file
 
 from honeypoke_extractor import HoneyPokeExtractor
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 API_KEY = os.getenv("ES_API_KEY")
 ES_URL = os.getenv("ES_URL")
@@ -87,54 +90,99 @@ def parse_rules():
 
 def main():
     
+    output_file = "./rules-view.html"
+    if len(sys.argv) == 2:
+        output_file = sys.argv[1]
+
+    jinja_env = Environment(
+        loader=FileSystemLoader("templates"),
+        autoescape=select_autoescape()
+    )
     
     parsed_rules = parse_rules()
 
     extractor = HoneyPokeExtractor(ES_URL, api_key=API_KEY)
 
-    items = extractor.get_hits(time_start=(datetime.now() - timedelta(days=1)), time_end=(datetime.now()), count=10000)
+    hit_items = extractor.get_hits(time_start=(datetime.now() - timedelta(days=1)), time_end=(datetime.now()), count=10000)
 
-    print(len(items))
+    print(len(hit_items))
 
+    port_map = {}
+    rules_map = {}
     matched_items = []
 
-    for item in items:
+    for hit_item in hit_items:
         # print(item)
-        if item['input'].strip() == "":
+        if hit_item['input'].strip() == "":
             continue
+
+        port_data = f"{hit_item['protocol']}/{hit_item['port']}"
 
         matched_rules = []
         for rule in parsed_rules:
-            if rule['protocol'] != item['protocol']:
+            if rule['protocol'] != hit_item['protocol']:
                 continue
-            if 'port' in rule and rule['port'] != item['port']:
+            if 'port' in rule and rule['port'] != hit_item['port']:
                 continue
-            matches = True
+
+            matches_all = True
             matched_values = []
             for str_match in rule['str']:
-                if str_match['value'] in item['input']:
+                if str_match['value'] in hit_item['input']:
                     if str_match['do_match']:
-                        matches = matches and True
+                        matches_all = matches_all and True
                         matched_values.append(str_match['value'])
                     else:
-                        matches = matches and False
+                        matches_all = matches_all and False
                 else:
-                    matches = matches and False
+                    matches_all = matches_all and False
+
+            if matches_all and 'regex' in rule and len(rule['regex']) > 0:
+                for regex_match in rule['regex']:
+                    if regex_match['value'].search(hit_item['input']):
+                        matches_all = matches_all and True
+                    else:
+                        matches_all = matches_all and False
 
             if len(matched_values) == 0:
-                matches = False
+                matches_all = False
             
-            if matches:
+            if matches_all:
                 matched_rules.append(rule['message'])
+                if rule['message'] not in rules_map:
+                    rules_map[rule['message']] = 0
+                rules_map[rule['message']] += 1
 
         if len(matched_rules) > 0:
-            item['matched_rules'] = matched_rules
-            matched_items.append(item)
+            hit_item['matched_rules'] = matched_rules
+            matched_items.append(hit_item)
+            if port_data not in port_map:
+                port_map[port_data] = 0
+            port_map[port_data] += 1
 
-    for item in matched_items:
-        print(f"\n{item['remote_ip']} - {item['protocol']}/{item['port']}")
-        for rule in item['matched_rules']:
-            print(f"  - {rule}")
+    match_labels = []
+    match_values = []
+    for rule in rules_map:
+        match_labels.append(rule)
+        match_values.append(rules_map[rule])
+
+    port_labels = []
+    port_values = []
+    for port_data in port_map:
+        port_labels.append(port_data)
+        port_values.append(port_map[port_data])
+
+    time_compare_template = jinja_env.get_template("rules-view.html")
+    page_output = time_compare_template.render(
+        match_insert_labels=match_labels, match_insert_values=match_values,
+        port_insert_labels=port_labels, port_insert_values=port_values,
+        matches=matched_items,
+        today=date.today().isoformat()
+    )
+
+    with open(output_file, "w") as out:
+        out.write(page_output)
+
 main()
 
 

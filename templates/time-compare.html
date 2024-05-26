@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Time Compare</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+    </head>
+    <body>
+        <div id="topport"></div>
+        <div id="daychart"></div>
+        <div id="weekchart"></div>
+        <script>
+
+            const top_labels = [
+            {% for item in top_insert_labels %}
+                "{{ item }}",
+            {% endfor %}
+            ];
+            const top_values = [
+            {% for item in top_insert_values %}
+                {{ item }},
+            {% endfor %}
+            ];
+
+            var data = [
+                {
+                    labels: top_labels,
+                    values: top_values,
+                    type: 'pie',
+                    textinfo: "label+percent",
+                    textposition: "outside",
+                    automargin : true,
+                }
+            ];
+            var layout = {
+                title: {
+                    text: 'Top Ports for {{ today }}',
+                    automargin : true,
+                },
+                showlegend: false,
+                height: 600,
+            };
+
+            Plotly.newPlot('topport', data, layout);
+
+            const x_day_data = [
+            {% for item in x_day_insert_data %}
+                "{{ item }}",
+            {% endfor %}
+            ];
+            const y_day_data = [
+            {% for item in y_day_insert_data %}
+                {{ item }},
+            {% endfor %}
+            ];
+
+            var data = [
+                {
+                    x: x_day_data,
+                    y: y_day_data,
+                    type: 'bar'
+                }
+            ];
+            var layout = {
+                title: 'Daily percent change for {{ today }}',
+            };
+
+            Plotly.newPlot('daychart', data, layout);
+
+            const x_week_data = [
+            {% for item in x_week_insert_data %}
+                "{{ item }}",
+            {% endfor %}
+            ];
+            const y_week_data = [
+            {% for item in y_week_insert_data %}
+                {{ item }},
+            {% endfor %}
+            ];
+
+            var data = [
+                {
+                    x: x_week_data,
+                    y: y_week_data,
+                    type: 'bar'
+                }
+            ];
+            var layout = {
+                title: 'Weekly percent change for {{ today }}',
+            };
+
+            Plotly.newPlot('weekchart', data, layout);
+        </script>
+    </body>
+</html>

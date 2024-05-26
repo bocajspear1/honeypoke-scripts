@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html data-theme="light">
+    <head>
+        <title>IPS Rules</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+        <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+        />
+    </head>
+    <body>
+        <div id="rulesmatch"></div>
+        <div id="porthit"></div>
+        <div>
+            <table>
+                <caption>Rules Matched</caption>
+                <thead>
+                  <tr>
+                    <th>IP</th>
+                    <th>Protocol/Port</th>
+                    <th>Rules</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for item in matches %}
+                    <tr>
+                        <td data-label="IP"><h3>{{ item.remote_ip }}</h3></td>
+                        <td data-label="Protocol/Port">{{ item.protocol }}/{{ item.port }}</td>
+                        <td data-label="Rules">
+                            <ul>
+                                {% for rule in item.matched_rules %}
+                                    <li>{{ rule }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                  
+                </tbody>
+            </table>
+            
+        </div>
+        <script>
+
+            const match_labels = [
+            {% for item in match_insert_labels %}
+                "{{ item }}",
+            {% endfor %}
+            ];
+            const match_values = [
+            {% for item in match_insert_values %}
+                {{ item }},
+            {% endfor %}
+            ];
+
+            var data = [
+                {
+                    labels: match_labels,
+                    values: match_values,
+                    type: 'pie',
+                    textinfo: "label+percent",
+                    textposition: "outside",
+                    automargin : true,
+                }
+            ];
+            var layout = {
+                title: {
+                    text: 'Rules matched for {{ today }}',
+                    automargin : true,
+                },
+                showlegend: false,
+                height: 600,
+            };
+
+            Plotly.newPlot('rulesmatch', data, layout);
+
+            const port_labels = [
+            {% for item in port_insert_labels %}
+                "{{ item }}",
+            {% endfor %}
+            ];
+            const port_values = [
+            {% for item in port_insert_values %}
+                {{ item }},
+            {% endfor %}
+            ];
+
+            var data = [
+                {
+                    labels: port_labels,
+                    values: port_values,
+                    type: 'pie',
+                    textinfo: "label+percent",
+                    textposition: "outside",
+                    automargin : true,
+                }
+            ];
+            var layout = {
+                title: {
+                    text: 'Top ports exploited for {{ today }}',
+                    automargin : true,
+                },
+                showlegend: false,
+                height: 600,
+            };
+
+            Plotly.newPlot('porthit', data, layout);
+        </script>
+    </body>
+</html>
