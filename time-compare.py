@@ -37,7 +37,7 @@ def main():
     for item in today_list:
         today_total += item['count']
         if len(top_labels) <= 10:
-            top_labels.append(f"{item["protocol"]}/{item["port"]}")
+            top_labels.append(f"{item['protocol']}/{item['port']}")
             top_values.append(item['count'])
     # print(f"today total = {today_total}")
 
