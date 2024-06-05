@@ -20,21 +20,37 @@
                 <thead>
                   <tr>
                     <th>IP</th>
-                    <th>Protocol/Port</th>
-                    <th>Rules</th>
+                    <th>Ports</th>
                   </tr>
                 </thead>
                 <tbody>
-                    {% for item in matches %}
+                    {% for remote_ip,ports in matches.items() %}
                     <tr>
-                        <td data-label="IP"><h3>{{ item.remote_ip }}</h3></td>
-                        <td data-label="Protocol/Port">{{ item.protocol }}/{{ item.port }}</td>
-                        <td data-label="Rules">
-                            <ul>
-                                {% for rule in item.matched_rules %}
-                                    <li>{{ rule }}</li>
-                                {% endfor %}
-                            </ul>
+                        <td data-label="IP"><h3>{{ remote_ip }}</h3></td>
+                        <td data-label="Ports">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>Protocol/Port</th>
+                                    <th>Rules</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for port_name,rules in ports.items() %}
+                                    <tr>
+                                        <td data-label="IP"><h4>{{ port_name }}</h4></td>
+                                        <td data-label="Ports">
+                                            <ul>
+                                                {% for rule_name,count in rules.items() %}
+                                                    <li><strong>{{ rule_name }}:</strong> {{ count }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                
+                                </tbody>
+                            </table>
                         </td>
                     </tr>
                     {% endfor %}
@@ -58,21 +74,25 @@
 
             var data = [
                 {
-                    labels: match_labels,
-                    values: match_values,
-                    type: 'pie',
-                    textinfo: "label+percent",
-                    textposition: "outside",
+                    x: match_values,
+                    y: match_labels,
+                    type: 'bar',
+                    orientation: 'h',
+                    // textinfo: "label+percent",
+                    // textposition: "outside",
                     automargin : true,
                 }
             ];
             var layout = {
                 title: {
                     text: 'Rules matched for {{ today }}',
-                    automargin : true,
+                    // automargin : true,
                 },
                 showlegend: false,
                 height: 600,
+                yaxis: {
+                    automargin: true,
+                }
             };
 
             Plotly.newPlot('rulesmatch', data, layout);
@@ -90,12 +110,12 @@
 
             var data = [
                 {
-                    labels: port_labels,
-                    values: port_values,
-                    type: 'pie',
-                    textinfo: "label+percent",
-                    textposition: "outside",
-                    automargin : true,
+                    x: port_labels,
+                    y: port_values,
+                    type: 'bar',
+                    // textinfo: "label+percent",
+                    // textposition: "outside",
+                    // automargin : true,
                 }
             ];
             var layout = {

@@ -172,11 +172,32 @@ def main():
         port_labels.append(port_data)
         port_values.append(port_map[port_data])
 
+    filtered_matches = {}
+    for match_item in matched_items:
+        remote_ip = match_item['remote_ip']
+        port_data = f"{match_item['protocol']}/{match_item['port']}"
+        if remote_ip not in filtered_matches:
+            filtered_matches[remote_ip] = {}
+        
+        if port_data not in filtered_matches[remote_ip]:
+            filtered_matches[remote_ip][port_data] = {}
+
+        for matched_rule in match_item['matched_rules']:
+            if not matched_rule in filtered_matches[remote_ip][port_data]:
+                filtered_matches[remote_ip][port_data][matched_rule] = 0
+            filtered_matches[remote_ip][port_data][matched_rule] += 1
+
+
+        
+        
+
+
+
     time_compare_template = jinja_env.get_template("rules-view.html")
     page_output = time_compare_template.render(
         match_insert_labels=match_labels, match_insert_values=match_values,
         port_insert_labels=port_labels, port_insert_values=port_values,
-        matches=matched_items,
+        matches=filtered_matches,
         today=date.today().isoformat()
     )
 
