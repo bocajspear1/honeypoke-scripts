@@ -1,7 +1,11 @@
 import json
 import sys
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, timedelta
 import os
+
+from datetime import timezone
+UTC = timezone.utc
+
 
 from honeypoke_extractor import HoneyPokeExtractor
 from honeypoke_extractor.detect import ScanPatternDetector

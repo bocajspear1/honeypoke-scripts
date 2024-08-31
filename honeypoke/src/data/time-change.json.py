@@ -3,7 +3,11 @@ import os
 import sys
 import json
 
-from datetime import timedelta, datetime, date, UTC
+from datetime import timedelta, datetime
+
+from datetime import timezone
+UTC = timezone.utc
+
 
 from honeypoke_extractor import HoneyPokeExtractor
 
